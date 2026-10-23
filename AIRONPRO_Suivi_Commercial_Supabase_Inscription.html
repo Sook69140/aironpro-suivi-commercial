@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIRONPRO.ia — Suivi commercial & retours artisans</title>
+<style>
+:root{--navy:#163a5f;--blue:#2463eb;--ink:#172b4d;--muted:#64748b;--bg:#f4f7fb;--line:#dbe4ef;--white:#fff;--green:#087f5b;--amber:#a16207;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:linear-gradient(120deg,#102e4c,#1e5582);color:white;padding:22px clamp(16px,4vw,48px)}header .brand{font-size:12px;letter-spacing:.14em;font-weight:700;opacity:.8}h1{font-size:clamp(22px,3vw,32px);margin:6px 0}header p{margin:0;color:#dbeafe}
+main{max-width:1500px;margin:auto;padding:22px clamp(12px,3vw,36px) 50px}.notice{background:#fff8e6;border:1px solid #f3d48a;border-radius:12px;padding:12px 15px;margin-bottom:18px;color:#744b00}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:12px;margin-bottom:18px}.metric{background:white;border:1px solid var(--line);border-radius:14px;padding:16px}.metric small{color:var(--muted)}.metric strong{display:block;font-size:26px;margin-top:4px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{border:1px solid var(--line);border-radius:9px;background:#fff;padding:10px 14px;color:var(--ink);font-weight:650;cursor:pointer}.tab.active{background:var(--navy);border-color:var(--navy);color:white}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}.panel h2{font-size:19px;margin:0 0 14px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar input{flex:1;min-width:210px}
+input,select,textarea{font:inherit;padding:10px 11px;border:1px solid #cbd5e1;border-radius:8px;background:white;color:var(--ink);width:100%}textarea{min-height:82px;resize:vertical}label{display:block;font-weight:650;font-size:12px;color:#475569;margin-bottom:5px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.grid .wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{font:inherit;font-weight:650;padding:10px 13px;border-radius:8px;border:1px solid var(--line);background:white;cursor:pointer;color:var(--ink)}button.primary{background:var(--blue);border-color:var(--blue);color:white}button.dark{background:var(--navy);border-color:var(--navy);color:white}button.danger{color:var(--red)}button:hover{filter:brightness(.97)}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse;min-width:980px}th,td{padding:11px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{background:#edf3fa;color:#334155;font-size:12px;position:sticky;top:0}tr:last-child td{border-bottom:0}td small{display:block;color:var(--muted);margin-top:3px}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eaf1fb;color:#234b7a;font-size:11px;font-weight:700}.pill.good{background:#e4f7ef;color:#087f5b}.pill.wait{background:#fff4d6;color:#8a5a00}
+.hidden{display:none!important}.checkrow{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid #eef2f7}.checkrow input{width:auto;margin-top:3px}.checkrow label{font-size:14px;font-weight:500;color:var(--ink);margin:0}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:18px}
+@media(max-width:760px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}.grid .wide{grid-column:auto}.panel{padding:13px}}
+</style>
+</head>
+<body>
+<header><div class="brand">AIRONPRO.ia</div><h1>Suivi commercial & retours artisans</h1><p>Un seul parcours : prospecter, contacter, inscrire, tester et recueillir les retours.</p></header>
+<main>
+<section class="panel" id="cloudPanel" style="border:2px solid #2463eb">
+<h2>Connexion à la liste partagée</h2>
+<p id="cloudStatus">Connectez-vous avec votre compte Supabase pour charger la liste commune.</p>
+<div id="loginControls" class="grid">
+<div><label for="loginEmail">Adresse e-mail</label><input id="loginEmail" type="email" autocomplete="username" placeholder="votre adresse e-mail"></div>
+<div><label for="loginPassword">Mot de passe</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Mot de passe Supabase"></div>
+<div style="display:flex;align-items:end;gap:8px"><button class="primary" type="button" id="loginBtn">Se connecter</button><button type="button" id="signupBtn">Créer mon compte</button><button type="button" id="logoutBtn" class="hidden">Se déconnecter</button></div>
+</div>
+<p style="font-size:12px;color:#64748b;margin-bottom:0">Pour créer un compte, saisissez votre e-mail et choisissez un mot de passe (8 caractères minimum). La confirmation par e-mail peut être demandée. La clé publique est utilisée dans cette page : ne partagez jamais une clé secrète ou service_role.</p>
+</section>
+<div class="notice"><strong>Synchronisation partagée :</strong> connectez-vous avant de modifier la liste. Au premier accès, si aucune liste commune n’existe encore, les données déjà présentes dans ce navigateur seront proposées à l’initialisation de la liste partagée. Gardez une sauvegarde JSON/CSV avant la première synchronisation.</div>
+<div class="metrics">
+<div class="metric"><small>Pros dans la liste</small><strong id="mTotal">0</strong></div>
+<div class="metric"><small>À contacter</small><strong id="mToContact">0</strong></div>
+<div class="metric"><small>Inscrits gratuitement</small><strong id="mSigned">0</strong></div>
+<div class="metric"><small>Tests réalisés</small><strong id="mTests">0</strong></div>
+</div>
+<div class="tabs">
+<button class="tab active" data-tab="list">Liste commerciale</button><button class="tab" data-tab="prospect">Ajouter / modifier un pro</button><button class="tab" data-tab="feedback">Retour artisan & test</button><button class="tab" data-tab="export">Exports & sauvegarde</button>
+</div>
+<section id="list" class="panel">
+<h2>Liste des professionnels</h2>
+<div class="toolbar"><input id="search" placeholder="Rechercher une entreprise, un métier, une commune…"><select id="filterStatus" style="max-width:230px"><option value="">Tous les statuts</option><option>À contacter</option><option>Mail envoyé</option><option>Appel à faire</option><option>En attente de réponse</option><option>À relancer</option><option>Échange en cours</option><option>Inscrit gratuitement</option><option>Test accepté</option><option>Test réalisé</option><option>Pas intéressé</option></select><button class="primary" onclick="newProspect()">+ Nouveau pro</button></div>
+<div class="tablewrap"><table><thead><tr><th>Entreprise / métier</th><th>Commune</th><th>Contact</th><th>Responsable</th><th>Statut</th><th>Inscrit ?</th><th>Relance prévue</th><th>Actions</th></tr></thead><tbody id="prospectRows"></tbody></table></div>
+</section>
+<section id="prospect" class="panel hidden">
+<h2 id="prospectTitle">Ajouter un professionnel</h2>
+<form id="prospectForm">
+<input type="hidden" id="pId">
+<div class="grid">
+<div><label for="pCompany">Entreprise *</label><input id="pCompany" required></div><div><label for="pTrade">Métier / spécialité</label><input id="pTrade"></div><div><label for="pTown">Commune</label><input id="pTown"></div>
+<div><label for="pEmail">E-mail</label><input id="pEmail" type="email"></div><div><label for="pPhone">Téléphone</label><input id="pPhone" type="tel"></div><div><label for="pSource">Source du contact</label><input id="pSource" placeholder="Site web, recommandation…"></div>
+<div><label for="pOwner">Responsable du suivi</label><select id="pOwner"><option value="">À attribuer</option><option>Sylvain</option><option>Cédric</option></select></div><div><label for="pStatus">Statut commercial</label><select id="pStatus"><option>À contacter</option><option>Mail envoyé</option><option>Appel à faire</option><option>En attente de réponse</option><option>À relancer</option><option>Échange en cours</option><option>Inscrit gratuitement</option><option>Test accepté</option><option>Test réalisé</option><option>Pas intéressé</option><option>Contact invalide</option></select></div><div><label for="pChannel">Dernier canal utilisé</label><select id="pChannel"><option value="">Non renseigné</option><option>E-mail</option><option>Téléphone</option><option>SMS</option><option>Réseaux sociaux</option><option>En personne</option><option>Autre</option></select></div>
+<div><label for="pContactDate">Date du premier contact</label><input id="pContactDate" type="date"></div><div><label for="pReplyDate">Date de réponse</label><input id="pReplyDate" type="date"></div><div><label for="pRelance">Date de relance prévue</label><input id="pRelance" type="date"></div>
+<div><label for="pSigned">Inscription gratuite ?</label><select id="pSigned"><option>À confirmer</option><option>Oui</option><option>Non</option></select></div><div><label for="pTest">Intéressé pour tester ?</label><select id="pTest"><option>À confirmer</option><option>Oui</option><option>Non</option></select></div><div><label for="pNextDate">Date de prochaine action</label><input id="pNextDate" type="date"></div>
+<div class="wide"><label for="pSummary">Résumé du dernier échange / retour</label><textarea id="pSummary"></textarea></div><div class="wide"><label for="pNext">Prochaine action</label><textarea id="pNext" placeholder="Ex. rappeler jeudi, envoyer le lien d'inscription, prévoir un test…"></textarea></div><div class="wide"><label for="pNotes">Notes</label><textarea id="pNotes"></textarea></div>
+</div><div class="actions"><button class="primary" type="submit">Enregistrer le professionnel</button><button type="button" onclick="showTab('list')">Annuler</button></div>
+</form></section>
+<section id="feedback" class="panel hidden">
+<h2>Retour artisan & protocole de test</h2>
+<p>Choisissez un professionnel existant. Les réponses seront attachées à sa fiche pour éviter de ressaisir ses coordonnées.</p>
+<div class="grid">
+<div class="wide"><label for="fProspect">Professionnel *</label><select id="fProspect"><option value="">Sélectionner un professionnel…</option></select></div>
+<div><label for="fDate">Date du retour / test</label><input id="fDate" type="date"></div><div><label for="fInterviewer">Personne ayant recueilli le retour</label><select id="fInterviewer"><option>Sylvain</option><option>Cédric</option><option>Autre</option></select></div><div><label for="fType">Type d’échange</label><select id="fType"><option>Retour commercial</option><option>Test utilisateur</option><option>Suivi après inscription</option></select></div>
+<div class="wide"><label>Checklist du test utilisateur — cochez ce qui a été testé</label>
+<div class="checkrow"><input type="checkbox" id="c1"><label for="c1">L’artisan comprend l’objectif et la valeur d’AIRONPRO.ia.</label></div>
+<div class="checkrow"><input type="checkbox" id="c2"><label for="c2">Il trouve comment s’inscrire / accéder à la plateforme.</label></div>
+<div class="checkrow"><input type="checkbox" id="c3"><label for="c3">Il comprend comment démarrer un projet ou créer un devis.</label></div>
+<div class="checkrow"><input type="checkbox" id="c4"><label for="c4">Il comprend les fonctionnalités utiles à son métier.</label></div>
+<div class="checkrow"><input type="checkbox" id="c5"><label for="c5">Il arrive à réaliser la tâche sans aide importante.</label></div>
+<div class="checkrow"><input type="checkbox" id="c6"><label for="c6">Les blocages et difficultés ont été notés.</label></div>
+</div>
+<div class="wide"><label for="fQ1">1. Qu’est-ce qui vous semble le plus utile dans AIRONPRO.ia ?</label><textarea id="fQ1"></textarea></div>
+<div class="wide"><label for="fQ2">2. Qu’est-ce qui vous paraît compliqué, peu clair ou inutile ?</label><textarea id="fQ2"></textarea></div>
+<div class="wide"><label for="fQ3">3. Qu’aimeriez-vous pouvoir faire en priorité avec l’application ?</label><textarea id="fQ3"></textarea></div>
+<div class="wide"><label for="fQ4">4. Avez-vous rencontré un problème ou un blocage ? Lequel ?</label><textarea id="fQ4"></textarea></div>
+<div class="wide"><label for="fQ5">5. Recommanderiez-vous l’application à un autre artisan ? Pourquoi ?</label><textarea id="fQ5"></textarea></div>
+<div class="wide"><label for="fSummary">Synthèse du retour</label><textarea id="fSummary"></textarea></div>
+<div class="wide"><label for="fIssues">Problèmes / améliorations à transmettre à l’équipe</label><textarea id="fIssues"></textarea></div>
+<div class="wide"><label for="fNext">Suite à donner / engagement pris</label><textarea id="fNext"></textarea></div>
+</div>
+<div class="actions"><button class="primary" onclick="saveFeedback()">Enregistrer le retour</button><button onclick="resetFeedback()">Vider le formulaire</button></div>
+<div class="panel" style="margin-top:18px;background:#f8fafc"><h2>Historique des retours</h2><div id="feedbackHistory">Aucun retour enregistré.</div></div>
+</section>
+<section id="export" class="panel hidden">
+<h2>Importer une liste de professionnels</h2>
+<p>Ajoutez des contacts depuis un fichier Excel, CSV ou texte. La page reconnaît les colonnes courantes (entreprise, métier, commune, e-mail, téléphone) et vous permet de vérifier les données avant de les ajouter. Les doublons probables (même e-mail ou même nom d’entreprise) sont ignorés.</p>
+<div class="grid">
+<div class="wide"><label for="prospectImportFile">Choisir un fichier (.xlsx, .xls, .csv, .tsv, .txt)</label><input id="prospectImportFile" type="file" accept=".xlsx,.xls,.csv,.tsv,.txt"></div>
+<div class="wide"><label for="pasteProspects">Ou coller une liste de professionnels</label><textarea id="pasteProspects" placeholder="Exemple : Entreprise ; Métier ; Commune ; E-mail ; Téléphone&#10;Martin Peinture ; Peinture ; Lyon ; contact@exemple.fr ; 0600000000"></textarea>
+<p class="muted" style="margin-top:6px">Format conseillé : une ligne par professionnel, colonnes séparées par des points-virgules. Exemple : <code>AB Rénovation;Rénovation multi-métiers;Lyon;abrenovation.lyon@gmail.com;06 35 90 39 06</code></p></div>
+</div>
+<div class="actions"><button class="primary" onclick="previewPastedProspects()">Analyser la liste collée</button><button onclick="document.getElementById('prospectImportFile').click()">Choisir un fichier</button></div>
+<div id="importPreview" class="hidden" style="margin-top:16px"></div>
+<hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+<h2>Exports & sauvegarde</h2><p>Les données restent dans ce navigateur tant que vous ne les effacez pas. Exportez régulièrement une sauvegarde JSON. Les fichiers CSV s’ouvrent dans Excel et peuvent ensuite être déposés dans OneDrive.</p>
+<div class="actions"><button class="primary" onclick="exportCSV('prospects')">Exporter la liste commerciale (.csv)</button><button class="primary" onclick="exportCSV('feedback')">Exporter les retours artisans (.csv)</button><button class="dark" onclick="backupJSON()">Sauvegarder toutes les données (.json)</button><label class="tab" style="display:inline-flex;align-items:center;gap:8px">Importer une sauvegarde JSON <input id="importFile" type="file" accept=".json,application/json" style="width:auto;padding:0;border:0"></label><button class="danger" onclick="clearAll()">Effacer les données locales</button></div>
+<p><strong>Pour obtenir la synchronisation OneDrive automatique :</strong> il faudra connecter un compte Microsoft autorisé et choisir la destination exacte des deux classeurs. Pour éviter les doublons et les divergences, la meilleure architecture sera une liste centrale des professionnels, avec un historique de contacts et des retours/tests liés à chaque fiche, puis une synchronisation vers Excel si vous souhaitez conserver les classeurs actuels.</p>
+</section>
+<footer>AIRONPRO.ia — L’intelligence artificielle au service du BTP.</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://opathirqapwnbrjczwha.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_FCJWpclrB0WYbDRe9DWzNw_EK0d9QHy";
+const initial=[
+["Créqui Peinture Rénovation","Peinture, rénovation","Lyon 6e","crequi.peinture62@gmail.com","04 72 83 58 59"],
+["MGI Rénovation","Rénovation, placo","Rillieux-la-Pape","contact@mgi-renovation.fr","06 24 67 76 69"],
+["AB Rénovation","Rénovation multi-métiers","Lyon (intervention)","abrenovation.lyon@gmail.com","06 35 90 39 06"],
+["Lyon Rénovation","Rénovation intérieure","Lyon 6e","contact@lyonrenovation.fr","07 69 51 16 08"],
+["Noca-Zacharie","Peinture, plâtrerie","Lyon 7e","contact@noca-zacharie.com","04 78 61 20 54"],
+["MB Rénovation Lyon","Rénovation intérieure","Lyon 4e","contact@mbrenovationlyon.com","06 29 38 12 15"],
+["BOUG & CO","Peinture, plâtrerie","Lyon","bougetco@gmail.com","06 98 64 90 26"],
+["Artcloibat","Peinture","Craponne","artcloibat@hotmail.fr","06 68 05 82 49"],
+["Novia Construction","Rénovation","Métropole de Lyon","contact@noviaconstruction.fr","06 64 75 11 23"],
+["Finitions Florentin","Peinture, carrelage","Lyon 6e","contact@finitionsflorentin.fr","07 87 85 93 06"],
+["Perfection Peinture Serrano","Peinture, placo","Lyon 9e","contact@perfection-peinture-lyon.fr","06 17 09 09 52"]
+];
+const key="aironpro_suivi_v1";
+let data=JSON.parse(localStorage.getItem(key)||"null");
+if(!data){data={prospects:initial.map((p,i)=>({id:String(i+1),company:p[0],trade:p[1],town:p[2],email:p[3],phone:p[4],source:"Site / contact",owner:"",status:"À contacter",channel:"",contactDate:"",replyDate:"",relance:"",signed:"À confirmer",test:"À confirmer",nextDate:"",summary:"",next:"",notes:"",feedbacks:[]}))};localStorage.setItem(key,JSON.stringify(data))}
+let supabaseClient=null, cloudReady=false, cloudWriteTimer=null, cloudWriteInProgress=false;
+try{if(window.supabase?.createClient)supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY)}catch(e){console.error(e)}
+function setCloudStatus(message,ok=false){const el=document.getElementById("cloudStatus");if(el){el.textContent=message;el.style.color=ok?"#087f5b":"#9a3412"}}
+function saveData(){localStorage.setItem(key,JSON.stringify(data));render();if(cloudReady)scheduleCloudSave()}
+function scheduleCloudSave(){clearTimeout(cloudWriteTimer);setCloudStatus("Modification enregistrée localement ; synchronisation en cours…");cloudWriteTimer=setTimeout(writeCloudData,700)}
+async function writeCloudData(){if(!supabaseClient||!cloudReady||cloudWriteInProgress)return;cloudWriteInProgress=true;try{const {error}=await supabaseClient.from("aironpro_shared_data").upsert({id:"main",payload:data,updated_at:new Date().toISOString()},{onConflict:"id"});if(error)throw error;setCloudStatus("Liste partagée synchronisée avec Supabase.",true)}catch(e){console.error(e);setCloudStatus("Échec de synchronisation : "+(e.message||"vérifiez les politiques RLS et la connexion."))}finally{cloudWriteInProgress=false}}
+async function loadCloudData(){if(!supabaseClient)throw new Error("La bibliothèque Supabase n’a pas pu être chargée.");const {data:row,error}=await supabaseClient.from("aironpro_shared_data").select("payload").eq("id","main").maybeSingle();if(error)throw error;if(row&&row.payload&&Array.isArray(row.payload.prospects)){data=row.payload;localStorage.setItem(key,JSON.stringify(data));cloudReady=true;render();setCloudStatus("Connecté : liste commune chargée depuis Supabase.",true)}else{const ok=confirm("Aucune liste commune n’existe encore. Envoyer les "+data.prospects.length+" contacts présents dans ce navigateur vers la liste partagée ? Choisissez Annuler si vous préférez vérifier la sauvegarde avant.");if(ok){cloudReady=true;await writeCloudData();render()}else{setCloudStatus("Connecté, mais la liste commune n’a pas été initialisée. Ne modifiez rien avant d’avoir choisi la liste de départ.");cloudReady=false}}}
+async function refreshAuthState(){if(!supabaseClient)return;const {data:{session}}=await supabaseClient.auth.getSession();const login=document.getElementById("loginControls");if(session){document.getElementById("loginBtn").classList.add("hidden");document.getElementById("signupBtn").classList.add("hidden");document.getElementById("logoutBtn").classList.remove("hidden");document.getElementById("loginEmail").disabled=true;document.getElementById("loginPassword").classList.add("hidden");try{await loadCloudData()}catch(e){cloudReady=false;setCloudStatus("Connexion réussie, mais lecture de la liste impossible : "+(e.message||"vérifiez les politiques RLS."))}}else{cloudReady=false;document.getElementById("loginBtn").classList.remove("hidden");document.getElementById("signupBtn").classList.remove("hidden");document.getElementById("logoutBtn").classList.add("hidden");document.getElementById("loginEmail").disabled=false;document.getElementById("loginPassword").classList.remove("hidden");setCloudStatus("Connectez-vous avec un compte utilisateur Supabase autorisé.")}}
+document.getElementById("loginBtn").addEventListener("click",async()=>{const email=document.getElementById("loginEmail").value.trim(),password=document.getElementById("loginPassword").value;if(!email||!password){alert("Saisissez votre e-mail et votre mot de passe.");return}if(!supabaseClient){alert("Connexion Supabase indisponible : vérifiez votre connexion Internet.");return}const btn=document.getElementById("loginBtn");btn.disabled=true;try{const {error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;await refreshAuthState()}catch(e){setCloudStatus("Connexion impossible : "+(e.message||"vérifiez l’e-mail et le mot de passe."));alert("Connexion impossible. Vérifiez l’adresse e-mail, le mot de passe et la confirmation de l’adresse si elle est activée.")}finally{btn.disabled=false}});
+document.getElementById("signupBtn").addEventListener("click",async()=>{const email=document.getElementById("loginEmail").value.trim(),password=document.getElementById("loginPassword").value;if(!email||!password){alert("Saisissez votre adresse e-mail et choisissez un mot de passe.");return}if(password.length<8){alert("Choisissez un mot de passe d’au moins 8 caractères.");return}if(!supabaseClient){alert("Inscription Supabase indisponible : vérifiez votre connexion Internet.");return}const btn=document.getElementById("signupBtn");btn.disabled=true;try{const {data:result,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+window.location.pathname}});if(error)throw error;if(result.session){await refreshAuthState()}else{setCloudStatus("Compte créé. Consultez votre boîte mail pour confirmer l’adresse, puis revenez sur cette page pour vous connecter.",true);alert("Demande d’inscription envoyée. Si la confirmation par e-mail est activée, cliquez sur le lien reçu puis revenez sur la page de suivi.")}}catch(e){setCloudStatus("Inscription impossible : "+(e.message||"vérifiez les paramètres Supabase."));alert("Inscription impossible : "+(e.message||"vérifiez l’adresse e-mail et les paramètres Supabase."))}finally{btn.disabled=false}});
+document.getElementById("logoutBtn").addEventListener("click",async()=>{if(!supabaseClient)return;await supabaseClient.auth.signOut();cloudReady=false;await refreshAuthState()});
+if(supabaseClient){supabaseClient.auth.onAuthStateChange((_event,session)=>{if(!session){cloudReady=false;setCloudStatus("Déconnecté de la liste partagée.")}})}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function showTab(id){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");document.querySelectorAll(".tab[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));if(id==="feedback")fillFeedbackSelect()}
+document.querySelectorAll(".tab[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+function render(){const q=(document.getElementById("search")?.value||"").toLowerCase(), st=document.getElementById("filterStatus")?.value||"";
+document.getElementById("mTotal").textContent=data.prospects.length;document.getElementById("mToContact").textContent=data.prospects.filter(p=>["À contacter","Appel à faire"].includes(p.status)).length;document.getElementById("mSigned").textContent=data.prospects.filter(p=>p.signed==="Oui").length;document.getElementById("mTests").textContent=data.prospects.filter(p=>p.status==="Test réalisé").length;
+const rows=data.prospects.filter(p=>(!st||p.status===st)&&JSON.stringify(p).toLowerCase().includes(q));
+document.getElementById("prospectRows").innerHTML=rows.map(p=>`<tr><td><strong>${esc(p.company)}</strong><small>${esc(p.trade)}</small></td><td>${esc(p.town)}</td><td>${esc(p.email)}<small>${esc(p.phone)}</small></td><td>${esc(p.owner||"À attribuer")}</td><td><span class="pill ${["Inscrit gratuitement","Test accepté","Test réalisé"].includes(p.status)?"good":p.status==="À relancer"?"wait":""}">${esc(p.status)}</span></td><td>${esc(p.signed||"À confirmer")}</td><td>${esc(p.relance||"—")}</td><td><button onclick="editProspect('${p.id}')">Ouvrir</button> <button onclick="quickFeedback('${p.id}')">Retour</button></td></tr>`).join("")||'<tr><td colspan="8">Aucun professionnel ne correspond à la recherche.</td></tr>';
+fillFeedbackSelect();renderFeedbackHistory()}
+document.getElementById("search").addEventListener("input",render);document.getElementById("filterStatus").addEventListener("change",render);
+function newProspect(){document.getElementById("prospectForm").reset();document.getElementById("pId").value="";document.getElementById("prospectTitle").textContent="Ajouter un professionnel";showTab("prospect")}
+const fields={company:"pCompany",trade:"pTrade",town:"pTown",email:"pEmail",phone:"pPhone",source:"pSource",owner:"pOwner",status:"pStatus",channel:"pChannel",contactDate:"pContactDate",replyDate:"pReplyDate",relance:"pRelance",signed:"pSigned",test:"pTest",nextDate:"pNextDate",summary:"pSummary",next:"pNext",notes:"pNotes"};
+function editProspect(id){const p=data.prospects.find(x=>x.id===id);if(!p)return;document.getElementById("prospectForm").reset();document.getElementById("pId").value=id;for(const [k,id2] of Object.entries(fields))document.getElementById(id2).value=p[k]||"";document.getElementById("prospectTitle").textContent="Modifier : "+p.company;showTab("prospect")}
+document.getElementById("prospectForm").addEventListener("submit",e=>{e.preventDefault();const id=document.getElementById("pId").value;const p={id:id||String(Date.now()),feedbacks:[]};for(const [k,id2] of Object.entries(fields))p[k]=document.getElementById(id2).value.trim();if(id){const old=data.prospects.find(x=>x.id===id);p.feedbacks=old.feedbacks||[];data.prospects=data.prospects.map(x=>x.id===id?p:x)}else data.prospects.push(p);saveData();showTab("list")});
+function fillFeedbackSelect(){const sel=document.getElementById("fProspect"),old=sel.value;sel.innerHTML='<option value="">Sélectionner un professionnel…</option>'+data.prospects.map(p=>`<option value="${esc(p.id)}">${esc(p.company)} — ${esc(p.town)}</option>`).join("");if(data.prospects.some(p=>p.id===old))sel.value=old}
+function quickFeedback(id){showTab("feedback");document.getElementById("fProspect").value=id}
+function saveFeedback(){const id=document.getElementById("fProspect").value;if(!id){alert("Sélectionnez un professionnel.");return}const f={date:val("fDate"),interviewer:val("fInterviewer"),type:val("fType"),checklist:["c1","c2","c3","c4","c5","c6"].map(x=>document.getElementById(x).checked),q1:val("fQ1"),q2:val("fQ2"),q3:val("fQ3"),q4:val("fQ4"),q5:val("fQ5"),summary:val("fSummary"),issues:val("fIssues"),next:val("fNext")};const p=data.prospects.find(x=>x.id===id);p.feedbacks=p.feedbacks||[];p.feedbacks.push(f);p.summary=f.summary||p.summary;p.next=f.next||p.next;if(f.type==="Test utilisateur"&&f.checklist.some(Boolean)&&p.status==="Test accepté")p.status="Test réalisé";saveData();resetFeedback();document.getElementById("fProspect").value=id;renderFeedbackHistory();alert("Retour enregistré dans la fiche de "+p.company+".")}
+function val(id){return document.getElementById(id).value.trim()}
+function resetFeedback(){["fDate","fQ1","fQ2","fQ3","fQ4","fQ5","fSummary","fIssues","fNext"].forEach(id=>document.getElementById(id).value="");["c1","c2","c3","c4","c5","c6"].forEach(id=>document.getElementById(id).checked=false)}
+function renderFeedbackHistory(){const el=document.getElementById("feedbackHistory");const all=data.prospects.flatMap(p=>(p.feedbacks||[]).map(f=>({p,f}))).reverse();el.innerHTML=all.length?all.map(({p,f})=>`<div style="padding:10px 0;border-bottom:1px solid #e2e8f0"><strong>${esc(p.company)}</strong> — ${esc(f.type)} <small>${esc(f.date||"Date non renseignée")} · ${esc(f.interviewer||"")}</small><div>${esc(f.summary||"Pas de synthèse saisie")}</div></div>`).join(""):"Aucun retour enregistré."}
+function csvEscape(v){return '"'+String(v??"").replace(/"/g,'""')+'"'}
+function download(name,content,type="text/csv;charset=utf-8;"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff",content],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function exportCSV(which){let rows;if(which==="prospects"){const keys=Object.keys(fields);rows=[keys.map(k=>({company:"Entreprise",trade:"Métier",town:"Commune",email:"E-mail",phone:"Téléphone",source:"Source",owner:"Responsable",status:"Statut",channel:"Canal",contactDate:"Date premier contact",replyDate:"Date réponse",relance:"Relance prévue",signed:"Inscrit gratuitement",test:"Intéressé pour tester",nextDate:"Date prochaine action",summary:"Résumé retour",next:"Prochaine action",notes:"Notes"}[k])),...data.prospects.map(p=>keys.map(k=>p[k]||""))]}else{rows=[["Entreprise","Date","Interlocuteur","Type","Checklist","Question 1 — utile","Question 2 — difficultés","Question 3 — priorité","Question 4 — blocage","Question 5 — recommandation","Synthèse","Améliorations","Suite à donner"],...data.prospects.flatMap(p=>(p.feedbacks||[]).map(f=>[p.company,f.date,f.interviewer,f.type,(f.checklist||[]).map((x,i)=>x?["Objectif compris","Inscription comprise","Projet/devis compris","Fonctionnalités comprises","Tâche autonome","Blocages notés"][i]:"").filter(Boolean).join("; "),f.q1,f.q2,f.q3,f.q4,f.q5,f.summary,f.issues,f.next]))]};download(which==="prospects"?"AIRONPRO_Suivi_commercial.csv":"AIRONPRO_Retours_artisans.csv",rows.map(r=>r.map(csvEscape).join(";")).join("\r\n"))}
+function backupJSON(){download("AIRONPRO_Sauvegarde.json",JSON.stringify(data,null,2),"application/json")}
+document.getElementById("importFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x.prospects))throw Error();data=x;saveData();alert("Sauvegarde importée.")}catch{alert("Fichier JSON invalide.")}};r.readAsText(f)});
+function clearAll(){if(confirm("Effacer toutes les données sauvegardées dans ce navigateur ? Cette action est irréversible.")){data={prospects:[]};saveData()}}
+let pendingImports=[];
+function normHead(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"")}
+function detectField(h){
+ const n=normHead(h);
+ if(/^(entreprise|societe|raisonSociale|nomentreprise|nomdusociete|company|business|artisan|nomprofessionnel)$/.test(n)||n.includes("entreprise")||n.includes("societe"))return "company";
+ if(n==="nom"||n==="name")return "company";
+ if(n.includes("metier")||n.includes("specialite")||n.includes("activite")||n.includes("corpsdetat")||n==="trade")return "trade";
+ if(n.includes("commune")||n.includes("ville")||n.includes("localite")||n.includes("adresse")||n.includes("town")||n.includes("city"))return "town";
+ if(n==="email"||n==="courriel"||n==="mail"||n.includes("adresseemail")||n.includes("emailprofessionnel")||n.includes("emailcontact"))return "email";
+ if(n.includes("telephone")||n.includes("tel")||n.includes("mobile")||n.includes("phone"))return "phone";
+ if(n.includes("siteweb")||n==="site"||n.includes("source"))return "source";
+ return null;
+}
+function parseDelimited(text){
+ const lines=text.replace(/^\uFEFF/,"").split(/\r?\n/).filter(x=>x.trim());
+ if(!lines.length)return [];
+ const candidates=[";",",","\t"];
+ const delim=candidates.sort((a,b)=>(lines[0].split(b).length-lines[0].split(a).length))[0];
+ const parseLine=line=>{let out=[],cur="",quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'&&quoted){cur+='"';i++}else if(c==='"'){quoted=!quoted}else if(c===delim&&!quoted){out.push(cur.trim());cur=""}else cur+=c}out.push(cur.trim());return out};
+ const rows=lines.map(parseLine);
+ const headers=rows[0].map(detectField);
+ // Ne considérer la première ligne comme un en-tête que si elle ressemble clairement à une ligne de titres.
+ // Sinon, une valeur réelle telle que « Rénovation multi-métiers » était prise à tort pour un en-tête,
+ // et l'unique contact était supprimé de l'aperçu.
+ const normalizedFirst=rows[0].map(normHead);
+ const headerWords=["entreprise","societe","raisonsociale","nomentreprise","nomdusociete","company","business","artisan","nomprofessionnel","nom","name","metier","specialite","activite","corpsdetat","trade","commune","ville","localite","town","city","email","courriel","mail","telephone","tel","mobile","phone"];
+ const headerHits=normalizedFirst.filter(v=>headerWords.includes(v)).length;
+ const hasHeader=headerHits>=2;
+ const keys=hasHeader?headers:rows[0].map((_,i)=>["company","trade","town","email","phone"][i]||null);
+ const body=hasHeader?rows.slice(1):rows;
+ return body.map(row=>{let p={};keys.forEach((k,i)=>{if(k&&row[i])p[k]=row[i]});return p}).filter(p=>p.company||p.email||p.phone);
+}
+function prepareImports(rows){
+ pendingImports=rows.map(r=>({company:r.company||r.entreprise||r.nom||"",trade:r.trade||r.metier||"",town:r.town||r.commune||"",email:r.email||"",phone:r.phone||"",source:r.source||"Import de fichier",owner:"",status:"À contacter",channel:"",contactDate:"",replyDate:"",relance:"",signed:"À confirmer",test:"À confirmer",nextDate:"",summary:"",next:"",notes:"Importé le "+new Date().toLocaleDateString("fr-FR"),feedbacks:[]})).filter(p=>p.company||p.email||p.phone);
+ const known=new Set(data.prospects.map(p=>(p.email||"").trim().toLowerCase()).filter(Boolean));
+ const names=new Set(data.prospects.map(p=>normHead(p.company)).filter(Boolean));
+ let duplicate=0;
+ pendingImports=pendingImports.map(p=>{const dup=(p.email&&known.has(p.email.trim().toLowerCase()))|| (p.company&&names.has(normHead(p.company)));if(dup){p._duplicate=true;duplicate++}return p});
+ const newCount=pendingImports.filter(p=>!p._duplicate).length;
+ const preview=document.getElementById("importPreview");
+ preview.classList.remove("hidden");
+ preview.innerHTML=`<h3 style="margin:0 0 8px">Vérification avant ajout</h3><p>${pendingImports.length} ligne(s) reconnue(s), dont <strong>${newCount} nouveau(x) contact(s)</strong> et ${duplicate} doublon(s) probable(s) qui seront ignorés.</p><div class="tablewrap"><table style="min-width:600px"><thead><tr><th>Entreprise</th><th>Métier</th><th>Commune</th><th>E-mail</th><th>Téléphone</th><th>Résultat</th></tr></thead><tbody>${pendingImports.slice(0,100).map(p=>`<tr><td>${esc(p.company)}</td><td>${esc(p.trade)}</td><td>${esc(p.town)}</td><td>${esc(p.email)}</td><td>${esc(p.phone)}</td><td>${p._duplicate?'<span class="pill wait">Doublon probable</span>':'<span class="pill good">À ajouter</span>'}</td></tr>`).join("")}</tbody></table></div>${pendingImports.length>100?`<p>Aperçu limité aux 100 premières lignes. Les contacts reconnus seront tous traités.</p>`:""}<div class="actions"><button class="primary" onclick="confirmImport()">Ajouter les nouveaux contacts à la liste</button><button onclick="cancelImport()">Annuler</button></div>`;
+}
+function previewPastedProspects(){const t=document.getElementById("pasteProspects").value;if(!t.trim()){alert("Collez d’abord une liste de professionnels.");return}prepareImports(parseDelimited(t))}
+document.getElementById("prospectImportFile").addEventListener("change",async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{
+  let rows=[];
+  if(/\.(xlsx|xls)$/i.test(file.name)){
+   if(!window.XLSX){alert("La bibliothèque de lecture Excel n’a pas pu être chargée. Exportez le classeur en CSV puis importez ce CSV.");return}
+   const buf=await file.arrayBuffer();const book=XLSX.read(buf,{type:"array"});const sheet=book.Sheets[book.SheetNames[0]];rows=XLSX.utils.sheet_to_json(sheet,{defval:""}).map(obj=>{const p={};Object.entries(obj).forEach(([k,v])=>{const f=detectField(k);if(f)p[f]=String(v)});return p});
+  }else{rows=parseDelimited(await file.text())}
+  if(!rows.length){alert("Aucun contact reconnu. Vérifiez que le fichier contient une colonne Entreprise/Nom, E-mail ou Téléphone.");return}
+  prepareImports(rows);
+ }catch(err){alert("Impossible de lire ce fichier. Essayez de l’enregistrer en CSV UTF-8.");}
+ e.target.value="";
+});
+function confirmImport(){
+ const fresh=pendingImports.filter(p=>!p._duplicate).map((p,i)=>{delete p._duplicate;p.id=String(Date.now())+"_"+i;return p});
+ if(!fresh.length){alert("Aucun nouveau contact à ajouter.");return}
+ data.prospects.push(...fresh);saveData();pendingImports=[];document.getElementById("importPreview").classList.add("hidden");document.getElementById("pasteProspects").value="";alert(fresh.length+" professionnel(s) ajouté(s) à la liste commerciale.");showTab("list");
+}
+function cancelImport(){pendingImports=[];document.getElementById("importPreview").classList.add("hidden")}
+render();
+refreshAuthState();
+</script>
+</body></html>
