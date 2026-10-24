@@ -18,14 +18,19 @@ button{font:inherit;font-weight:650;padding:10px 13px;border-radius:8px;border:1
 .hidden{display:none!important}.checkrow{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid #eef2f7}.checkrow input{width:auto;margin-top:3px}.checkrow label{font-size:14px;font-weight:500;color:var(--ink);margin:0}
 footer{color:var(--muted);font-size:12px;text-align:center;padding:18px}
 @media(max-width:760px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}.grid .wide{grid-column:auto}.panel{padding:13px}}
+#cloudPanel.connected{padding:8px 12px!important;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#cloudPanel.connected h2,#cloudPanel.connected #loginControls>div:nth-child(1),#cloudPanel.connected #loginControls>div:nth-child(2),#cloudPanel.connected>p:not(#cloudStatus){display:none!important}
+#cloudPanel.connected #cloudStatus{margin:0!important;flex:1;min-width:220px}
+#cloudPanel.connected #loginControls{display:flex;gap:8px;margin:0}
+#cloudPanel.connected #loginControls>div:nth-child(3){display:flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
 <header><div class="brand">AIRONPRO.ia</div><h1>Suivi commercial & retours artisans</h1><p>Un seul parcours : prospecter, contacter, inscrire, tester et recueillir les retours.</p></header>
 <main>
-<section class="panel" id="cloudPanel" style="border:2px solid #2463eb">
+<section class="panel" id="cloudPanel" style="border:2px solid #2463eb;background:#fff;box-shadow:0 3px 12px rgba(15,23,42,.10);position:sticky;top:0;z-index:100">
 <h2>Connexion à la liste partagée</h2>
-<p id="cloudStatus">Connectez-vous avec votre compte Supabase pour charger la liste commune.</p>
+<p id="cloudStatus" style="font-weight:700;margin-bottom:10px">Connectez-vous avec votre compte Supabase pour charger la liste commune.</p>
 <div id="loginControls" class="grid">
 <div><label for="loginEmail">Adresse e-mail</label><input id="loginEmail" type="email" autocomplete="username" placeholder="votre adresse e-mail"></div>
 <div><label for="loginPassword">Mot de passe</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Mot de passe Supabase"></div>
@@ -33,6 +38,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:18px}
 </div>
 <p style="font-size:12px;color:#64748b;margin-bottom:0">Pour créer un compte, saisissez votre e-mail et choisissez un mot de passe (8 caractères minimum). La confirmation par e-mail peut être demandée. La clé publique est utilisée dans cette page : ne partagez jamais une clé secrète ou service_role.</p>
 </section>
+<div id="appWorkspace" class="hidden">
 <div class="notice"><strong>Synchronisation partagée :</strong> connectez-vous avant de modifier la liste. Au premier accès, si aucune liste commune n’existe encore, les données déjà présentes dans ce navigateur seront proposées à l’initialisation de la liste partagée. Gardez une sauvegarde JSON/CSV avant la première synchronisation.</div>
 <div class="metrics">
 <div class="metric"><small>Pros dans la liste</small><strong id="mTotal">0</strong></div>
@@ -102,6 +108,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:18px}
 <div class="actions"><button class="primary" onclick="exportCSV('prospects')">Exporter la liste commerciale (.csv)</button><button class="primary" onclick="exportCSV('feedback')">Exporter les retours artisans (.csv)</button><button class="dark" onclick="backupJSON()">Sauvegarder toutes les données (.json)</button><label class="tab" style="display:inline-flex;align-items:center;gap:8px">Importer une sauvegarde JSON <input id="importFile" type="file" accept=".json,application/json" style="width:auto;padding:0;border:0"></label><button class="danger" onclick="clearAll()">Effacer les données locales</button></div>
 <p><strong>Pour obtenir la synchronisation OneDrive automatique :</strong> il faudra connecter un compte Microsoft autorisé et choisir la destination exacte des deux classeurs. Pour éviter les doublons et les divergences, la meilleure architecture sera une liste centrale des professionnels, avec un historique de contacts et des retours/tests liés à chaque fiche, puis une synchronisation vers Excel si vous souhaitez conserver les classeurs actuels.</p>
 </section>
+</div><!-- Fin de l’espace réservé aux utilisateurs connectés -->
 <footer>AIRONPRO.ia — L’intelligence artificielle au service du BTP.</footer>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -132,18 +139,49 @@ function saveData(){localStorage.setItem(key,JSON.stringify(data));render();if(c
 function scheduleCloudSave(){clearTimeout(cloudWriteTimer);setCloudStatus("Modification enregistrée localement ; synchronisation en cours…");cloudWriteTimer=setTimeout(writeCloudData,700)}
 async function writeCloudData(){if(!supabaseClient||!cloudReady||cloudWriteInProgress)return;cloudWriteInProgress=true;try{const {error}=await supabaseClient.from("aironpro_shared_data").upsert({id:"main",payload:data,updated_at:new Date().toISOString()},{onConflict:"id"});if(error)throw error;setCloudStatus("Liste partagée synchronisée avec Supabase.",true)}catch(e){console.error(e);setCloudStatus("Échec de synchronisation : "+(e.message||"vérifiez les politiques RLS et la connexion."))}finally{cloudWriteInProgress=false}}
 async function loadCloudData(){if(!supabaseClient)throw new Error("La bibliothèque Supabase n’a pas pu être chargée.");const {data:row,error}=await supabaseClient.from("aironpro_shared_data").select("payload").eq("id","main").maybeSingle();if(error)throw error;if(row&&row.payload&&Array.isArray(row.payload.prospects)){data=row.payload;localStorage.setItem(key,JSON.stringify(data));cloudReady=true;render();setCloudStatus("Connecté : liste commune chargée depuis Supabase.",true)}else{const ok=confirm("Aucune liste commune n’existe encore. Envoyer les "+data.prospects.length+" contacts présents dans ce navigateur vers la liste partagée ? Choisissez Annuler si vous préférez vérifier la sauvegarde avant.");if(ok){cloudReady=true;await writeCloudData();render()}else{setCloudStatus("Connecté, mais la liste commune n’a pas été initialisée. Ne modifiez rien avant d’avoir choisi la liste de départ.");cloudReady=false}}}
-async function refreshAuthState(){if(!supabaseClient)return;const {data:{session}}=await supabaseClient.auth.getSession();const login=document.getElementById("loginControls");if(session){document.getElementById("loginBtn").classList.add("hidden");document.getElementById("signupBtn").classList.add("hidden");document.getElementById("logoutBtn").classList.remove("hidden");document.getElementById("loginEmail").disabled=true;document.getElementById("loginPassword").classList.add("hidden");try{await loadCloudData()}catch(e){cloudReady=false;setCloudStatus("Connexion réussie, mais lecture de la liste impossible : "+(e.message||"vérifiez les politiques RLS."))}}else{cloudReady=false;document.getElementById("loginBtn").classList.remove("hidden");document.getElementById("signupBtn").classList.remove("hidden");document.getElementById("logoutBtn").classList.add("hidden");document.getElementById("loginEmail").disabled=false;document.getElementById("loginPassword").classList.remove("hidden");setCloudStatus("Connectez-vous avec un compte utilisateur Supabase autorisé.")}}
+async function refreshAuthState(){
+ if(!supabaseClient)return;
+ const {data:{session}}=await supabaseClient.auth.getSession();
+ const workspace=document.getElementById("appWorkspace");
+ if(session){
+  const email=session.user?.email||"adresse inconnue";
+  document.getElementById("loginBtn").classList.add("hidden");
+  document.getElementById("signupBtn").classList.add("hidden");
+  document.getElementById("logoutBtn").classList.remove("hidden");
+  document.getElementById("loginEmail").value=email;
+  document.getElementById("loginEmail").disabled=true;
+  document.getElementById("loginPassword").classList.add("hidden");
+  workspace.classList.add("hidden");
+  cloudReady=false;
+  document.getElementById("cloudPanel").classList.add("connected");
+  setCloudStatus("🟢 Connecté en tant que "+email+" — actualisation de la liste commune…",true);
+  try{
+   await loadCloudData();
+   if(cloudReady){workspace.classList.remove("hidden");setCloudStatus("🟢 Connecté : "+email+" · liste commune actualisée depuis Supabase.",true)}
+   else{workspace.classList.add("hidden");setCloudStatus("🟢 Connecté : "+email+" · liste commune indisponible. Aucune donnée affichée.")}
+  }catch(e){cloudReady=false;workspace.classList.add("hidden");setCloudStatus("🟢 Connecté : "+email+" · impossible de charger la liste : "+(e.message||"vérifiez les politiques RLS."))}
+ }else{
+  cloudReady=false;workspace.classList.add("hidden");
+  document.getElementById("loginBtn").classList.remove("hidden");
+  document.getElementById("signupBtn").classList.remove("hidden");
+  document.getElementById("logoutBtn").classList.add("hidden");
+  document.getElementById("loginEmail").disabled=false;
+  document.getElementById("loginPassword").classList.remove("hidden");
+  document.getElementById("cloudPanel").classList.remove("connected");
+  setCloudStatus("⚪ Déconnecté — connectez-vous avec un compte utilisateur autorisé.")
+ }
+}
 document.getElementById("loginBtn").addEventListener("click",async()=>{const email=document.getElementById("loginEmail").value.trim(),password=document.getElementById("loginPassword").value;if(!email||!password){alert("Saisissez votre e-mail et votre mot de passe.");return}if(!supabaseClient){alert("Connexion Supabase indisponible : vérifiez votre connexion Internet.");return}const btn=document.getElementById("loginBtn");btn.disabled=true;try{const {error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;await refreshAuthState()}catch(e){setCloudStatus("Connexion impossible : "+(e.message||"vérifiez l’e-mail et le mot de passe."));alert("Connexion impossible. Vérifiez l’adresse e-mail, le mot de passe et la confirmation de l’adresse si elle est activée.")}finally{btn.disabled=false}});
 document.getElementById("signupBtn").addEventListener("click",async()=>{const email=document.getElementById("loginEmail").value.trim(),password=document.getElementById("loginPassword").value;if(!email||!password){alert("Saisissez votre adresse e-mail et choisissez un mot de passe.");return}if(password.length<8){alert("Choisissez un mot de passe d’au moins 8 caractères.");return}if(!supabaseClient){alert("Inscription Supabase indisponible : vérifiez votre connexion Internet.");return}const btn=document.getElementById("signupBtn");btn.disabled=true;try{const {data:result,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+window.location.pathname}});if(error)throw error;if(result.session){await refreshAuthState()}else{setCloudStatus("Compte créé. Consultez votre boîte mail pour confirmer l’adresse, puis revenez sur cette page pour vous connecter.",true);alert("Demande d’inscription envoyée. Si la confirmation par e-mail est activée, cliquez sur le lien reçu puis revenez sur la page de suivi.")}}catch(e){setCloudStatus("Inscription impossible : "+(e.message||"vérifiez les paramètres Supabase."));alert("Inscription impossible : "+(e.message||"vérifiez l’adresse e-mail et les paramètres Supabase."))}finally{btn.disabled=false}});
 document.getElementById("logoutBtn").addEventListener("click",async()=>{if(!supabaseClient)return;await supabaseClient.auth.signOut();cloudReady=false;await refreshAuthState()});
 if(supabaseClient){supabaseClient.auth.onAuthStateChange((_event,session)=>{if(!session){cloudReady=false;setCloudStatus("Déconnecté de la liste partagée.")}})}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function showTab(id){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");document.querySelectorAll(".tab[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));if(id==="feedback")fillFeedbackSelect()}
+function showTab(id){const workspace=document.getElementById("appWorkspace");workspace.querySelectorAll(":scope > section").forEach(section=>section.classList.add("hidden"));const target=document.getElementById(id);if(target&&workspace.contains(target))target.classList.remove("hidden");document.querySelectorAll(".tab[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));if(id==="feedback")fillFeedbackSelect();window.scrollTo({top:0,behavior:"smooth"})}
 document.querySelectorAll(".tab[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
 function render(){const q=(document.getElementById("search")?.value||"").toLowerCase(), st=document.getElementById("filterStatus")?.value||"";
 document.getElementById("mTotal").textContent=data.prospects.length;document.getElementById("mToContact").textContent=data.prospects.filter(p=>["À contacter","Appel à faire"].includes(p.status)).length;document.getElementById("mSigned").textContent=data.prospects.filter(p=>p.signed==="Oui").length;document.getElementById("mTests").textContent=data.prospects.filter(p=>p.status==="Test réalisé").length;
 const rows=data.prospects.filter(p=>(!st||p.status===st)&&JSON.stringify(p).toLowerCase().includes(q));
-document.getElementById("prospectRows").innerHTML=rows.map(p=>`<tr><td><strong>${esc(p.company)}</strong><small>${esc(p.trade)}</small></td><td>${esc(p.town)}</td><td>${esc(p.email)}<small>${esc(p.phone)}</small></td><td>${esc(p.owner||"À attribuer")}</td><td><span class="pill ${["Inscrit gratuitement","Test accepté","Test réalisé"].includes(p.status)?"good":p.status==="À relancer"?"wait":""}">${esc(p.status)}</span></td><td>${esc(p.signed||"À confirmer")}</td><td>${esc(p.relance||"—")}</td><td><button onclick="editProspect('${p.id}')">Ouvrir</button> <button onclick="quickFeedback('${p.id}')">Retour</button></td></tr>`).join("")||'<tr><td colspan="8">Aucun professionnel ne correspond à la recherche.</td></tr>';
+document.getElementById("prospectRows").innerHTML=rows.map(p=>`<tr class="prospect-row" style="cursor:pointer" title="Cliquer pour ouvrir la fiche" onclick="editProspect('${p.id}')"><td><strong>${esc(p.company)}</strong><small>${esc(p.trade)}</small></td><td>${esc(p.town)}</td><td>${esc(p.email)}<small>${esc(p.phone)}</small></td><td>${esc(p.owner||"À attribuer")}</td><td><span class="pill ${["Inscrit gratuitement","Test accepté","Test réalisé"].includes(p.status)?"good":p.status==="À relancer"?"wait":""}">${esc(p.status)}</span></td><td>${esc(p.signed||"À confirmer")}</td><td>${esc(p.relance||"—")}</td><td><button onclick="event.stopPropagation();editProspect('${p.id}')">Ouvrir</button> <button onclick="event.stopPropagation();quickFeedback('${p.id}')">Retour</button></td></tr>`).join("")||'<tr><td colspan="8">Aucun professionnel ne correspond à la recherche.</td></tr>';
 fillFeedbackSelect();renderFeedbackHistory()}
 document.getElementById("search").addEventListener("input",render);document.getElementById("filterStatus").addEventListener("change",render);
 function newProspect(){document.getElementById("prospectForm").reset();document.getElementById("pId").value="";document.getElementById("prospectTitle").textContent="Ajouter un professionnel";showTab("prospect")}
